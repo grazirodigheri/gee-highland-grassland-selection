@@ -139,3 +139,36 @@ var visPar = {'palette':'000000','opacity': 1}
 Map.addLayer(line_bioma, visPar, 'Bioma', false);
 Map.addLayer(line_estepe, visPar, 'Estepe '+name_est, false);
 
+
+
+// ============================
+//     EXPORT TIFFS
+// ============================
+
+// Função para exportar os tifs
+var exporttifgdrive = function (image, name, geom) {
+  // Defina os parâmetros de exportação
+  return Export.image.toDrive({
+            image: image,                 // A imagem a ser exportada
+            folder: 'GEE_TIFS',
+            description: name,       // Nome do arquivo de exportação
+            fileNamePrefix: name,    // Prefixo do nome do arquivo
+            region: geom,           // Região a ser exportada
+            scale: 30,                       // Escala em metros por pixel
+            crs: 'EPSG:4326',                // Sistema de referência de coordenadas (CRS)
+            maxPixels: 1e13,
+            fileFormat: 'GeoTIFF',           // Formato do arquivo de exportação
+            formatOptions: {
+              cloudOptimized: true          // Exportar como TIFF otimizado para nuvem (opcional)
+            }
+          });
+}
+
+// exporttifgdrive(campos_altitude_bioma, "campos_altitude_"+biome, bioma.geometry().bounds())
+// exporttifgdrive(all_faixas_bioma, "zonas_campos_altitude_"+biome, bioma.geometry().bounds())
+// exporttifgdrive(estepe_bioma, "estepe_"+name_est+"_"+biome, estepe.geometry().bounds())
+// exporttifgdrive(elevacao_estepe_bioma, "intersect_ca_estepe_"+name_est+"_"+biome, bioma.geometry().bounds())
+// exporttifgdrive(faixas_estepe_bioma, "zonas_intersect_ca_estepe_"+name_est+"_"+biome, bioma.geometry().bounds())
+
+exporttifgdrive(ca_classes, "campos_altitude_estepe_"+name_est+"_"+biome, bioma.geometry().bounds())
+exporttifgdrive(ca_classes_col9, "campos_altitude_estepe_"+name_est+"_col9_"+biome, bioma.geometry().bounds())
