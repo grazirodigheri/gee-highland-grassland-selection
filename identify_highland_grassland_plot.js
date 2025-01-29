@@ -139,8 +139,6 @@ var visPar = {'palette':'000000','opacity': 1}
 Map.addLayer(line_bioma, visPar, 'Bioma', false);
 Map.addLayer(line_estepe, visPar, 'Estepe '+name_est, false);
 
-
-
 // ============================
 //     EXPORT TIFFS
 // ============================
@@ -172,3 +170,41 @@ var exporttifgdrive = function (image, name, geom) {
 
 exporttifgdrive(ca_classes, "campos_altitude_estepe_"+name_est+"_"+biome, bioma.geometry().bounds())
 exporttifgdrive(ca_classes_col9, "campos_altitude_estepe_"+name_est+"_col9_"+biome, bioma.geometry().bounds())
+
+// ================================
+//  GERA A ÁREA ANUAL POR REGIÃO:
+// ================================
+
+// Seleciona e  define a imagem de entrada para cálculo de área
+var image_area = ca_classes
+var col = "all"
+
+// var image_area = ca_classes_col9
+// var col = "col9"
+
+var areaModule = require('users/grazielirodigheri/Scripts:Utils/classes_area_1territory.js')
+
+// Iterar sobre as propriedades e calcular a área
+var all_areas = regiao.map(function(feat){
+  var id = feat.get("sigla")
+  var areaClass = areaModule.calculateArea(image_area, feat.geometry(), 30, 10000)
+  
+  // Adicionar o ID da propriedade aos resultados
+  var areasWithID = areaClass.map(function(ft) {
+      return ft.set('ID', id);
+  })
+  return areasWithID
+});
+
+all_areas = all_areas.flatten()
+
+// Visualizar os resultados
+print("Áreas por classe e ID", all_areas);
+
+Export.table.toDrive({
+    collection: all_areas,
+    description: 'areas_campo_altitude_'+biome+"_"+name_est+"_"+col,
+    folder: 'GEE_areas',
+    fileNamePrefix: 'areas_campo_altitude_'+biome+"_"+name_est+"_"+col,
+    fileFormat: 'CSV'
+});
