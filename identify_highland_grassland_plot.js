@@ -140,6 +140,58 @@ Map.addLayer(line_bioma, visPar, 'Bioma', false);
 Map.addLayer(line_estepe, visPar, 'Estepe '+name_est, false);
 
 // ============================
+//     PLOTS NO CONSOLE
+// ============================
+print(Map.getScale())
+Map.setZoom(6)
+
+// Função para converter resultados em FeatureCollection
+var plotconsolemapa = function (Visparam, image, title, mask_img, line_shp, geom) { 
+  // Criar Thumbnail para plotar o mapa no Console
+  var visContainer = {
+    linePolygon: {palette: ['#000000']},  
+    vegetation: Visparam,
+  };
+  
+  // Barra de escala
+  var style = require('users/gena/packages:style');
+  // Adicionar a barra de escala
+  var scale_bar = style.ScaleBar.draw(scale_geom, {
+    steps:2, 
+    scale: 2300,
+    // multiplier: 1000,
+    palette: ['black', 'white'], 
+    text: {fontSize:18, textColor: '000000', outlineColor: 'black', outlineWidth: 1, outlineOpacity: 1}
+  });
+  
+  // Adicionar norte
+  var north_arrow = style.NorthArrow.draw(pt, 120, 3, 3)
+  
+  // Define o plot para add no console
+  var mapPlot =  mask_img.visualize(visContainer.linePolygon)
+                .blend(image.visualize(visContainer.vegetation))
+                .blend(line_shp.visualize(visContainer.linePolygon))
+                .blend(scale_bar)
+                .blend(north_arrow);
+  
+  var thumb = ui.Thumbnail({
+    image:mapPlot,
+    params: {dimensions: 2900, region: geom, format: 'png'}
+  });
+                
+  return print(title, thumb)
+};
+
+// plotconsolemapa(pall_mde, campos_altitude_bioma, "Campos Altitude - "+biome, mask_bioma, line_bioma, geometry)
+// plotconsolemapa(pall_faixas, all_faixas_bioma, "Zonas - Campos Altitude - "+biome, mask_bioma, line_bioma, geometry)
+// plotconsolemapa({'min':1, 'max':1, 'palette':['orange']}, estepe_bioma, "Estepe "+name_est+" - "+biome, mask_estepe, line_bioma, geometry)
+// plotconsolemapa(pall_mde, elevacao_estepe_bioma, "Intersect CA e Estepe "+name_est+" - "+biome, mask_bioma, line_bioma, geometry)
+// plotconsolemapa(pall_faixas, faixas_estepe_bioma, "Zonas - CA e Estepe "+name_est+" - "+biome, mask_bioma, line_bioma, geometry)
+
+plotconsolemapa(pall_classes, ca_classes, "Classes de Campos Altitude e Estepe "+name_est+" na "+biome, mask_bioma, line_bioma, geometry)
+plotconsolemapa(pall_classes, ca_classes_col9, "Classes de Campos Altitude e Estepe "+name_est+" na Col9 na "+biome, mask_bioma, line_bioma, geometry)
+
+// ============================
 //     EXPORT TIFFS
 // ============================
 
