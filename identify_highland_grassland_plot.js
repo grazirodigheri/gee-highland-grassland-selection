@@ -7,53 +7,52 @@
 */ 
 
 // ===============================
-//     SELECIONA A ESTEPE
+//     SELECT SHAPE ASSETS
 // ===============================
-// Limites de estepe
+// Grassland (steppe vegetation) boundaries
 var estepe_MA_250 = ee.FeatureCollection("projects/ee-evelezmartin/assets/estepes_refugios1-250m")
 var estepe_MA_5M = ee.FeatureCollection("projects/ee-evelezmartin/assets/estepes_refugios1-5M")
 
-// ----- SELECIONA O SHAPE DE ESTEPE AQUI -------
-var estepe = estepe_MA_250 // mudar para 250 ou 5M
-var name_est = "250"  // conforme o shape escolhido acima (250 ou 5M)
+// ----- SELECT THE SHAPE HERE -------
+var estepe = estepe_MA_250 // change to 250 or 5M
+var name_est = "250"  // select according the choice above (250 or 5M)
 
 // ==============================
-//     CARREGA OS DE ASSETS
+//     LOAD THE ASSETS
 // ==============================
-// Limite do biomas do Brasil
+// Boundaries of Brazil's biomes
 var biomas = ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/biomas_IBGE_250mil')
 var bioma = biomas.filter(ee.Filter.eq('Bioma','Mata Atlântica'))
 var biome = "MA"
 
-// Estados da MA
+// MA States
 var estados_leiMA = ee.FeatureCollection("projects/ee-evelezmartin/assets/estados_leiMA")
 
-// Modelo Digital de Elevação (MDE) - Opções
 // NASA SRTM Digital Elevation 30m:
 var mde_nasa = ee.Image('USGS/SRTMGL1_003')
 var elevation_nasa = mde_nasa.select('elevation')
 
-// Classificação col 9
+// LULC col9 - MapBiomas
 var col9 = ee.Image('projects/mapbiomas-public/assets/brazil/lulc/collection9/mapbiomas_collection90_integration_v1')
 
 // =================================
-//   PRÉ-PROCESSA OS ASSETS
+//   PRE-PROCESSES ASSETS
 // =================================
-// Cria a máscara da estepe
+// Create the steppe mask
 var mask_estepe = ee.Image().paint(estepe).eq(0)
 var line_estepe = ee.Image().paint(estepe,'vazio', 3).eq(0)
 
-// Cria a máscara do bioma
+// Create the bioma mask
 var mask_bioma = ee.Image().paint(estados_leiMA).eq(0)
 var line_bioma = ee.Image().paint(estados_leiMA,'vazio', 3).eq(0)
 Map.centerObject(estados_leiMA, 4)
 
-// Seleciona o MDE de análise
+// Select the MDE to perform the analysis
 var elevacao = elevation_nasa
   .clip(BR_shape)
 Map.addLayer(elevacao, {min: 0, max: 1500, 'palette':['cyan', 'blue', 'green', 'orange', 'brown']}, 'Elevação', false);
 
-// Cria uma máscara de campos da col9
+// Create grassland mask based on col9
 var mask_campo_col9 = col9
   .select("classification_2023")
   .eq(12).selfMask()
@@ -126,7 +125,6 @@ var ca_classes = ee.Image(1).updateMask(mask_bioma)
   .blend(ee.Image(4).updateMask(elevacao_estepe_bioma))
 Map.addLayer(ca_classes, pall_classes, 'Classes CA - '+biome, false);
 
-
 // =================================
 //    CLASSES NO BIOMA NA COL9
 // =================================
@@ -140,7 +138,7 @@ Map.addLayer(line_bioma, visPar, 'Bioma', false);
 Map.addLayer(line_estepe, visPar, 'Estepe '+name_est, false);
 
 // ============================
-//     PLOTS NO CONSOLE
+//     PLOTS ON CONSOLE
 // ============================
 print(Map.getScale())
 Map.setZoom(6)
@@ -153,7 +151,7 @@ var plotconsolemapa = function (Visparam, image, title, mask_img, line_shp, geom
     vegetation: Visparam,
   };
   
-  // Barra de escala
+  // Scale bar
   var style = require('users/gena/packages:style');
   // Adicionar a barra de escala
   var scale_bar = style.ScaleBar.draw(scale_geom, {
